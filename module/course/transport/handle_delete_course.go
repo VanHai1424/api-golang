@@ -8,6 +8,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// @Summary Xóa khóa học
+// @Description Xóa khóa học theo ID
+// @Tags courses
+// @Accept json
+// @Produce json
+// @Param id path int true "ID khóa học"
+// @Success 204 {string} string "No Content"
+// @Router /courses/{id} [delete]
 func HandleDeleteCourse(db *sql.DB) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")

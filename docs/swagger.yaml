@@ -1,0 +1,249 @@
+basePath: /api
+definitions:
+  coursemodel.Course:
+    properties:
+      category:
+        type: string
+      createdAt:
+        type: string
+      desc:
+        type: string
+      developer:
+        type: string
+      downloads:
+        type: string
+      id:
+        type: integer
+      img:
+        type: string
+      link:
+        type: string
+      playId:
+        type: string
+      title:
+        type: string
+      titleCate:
+        type: string
+      type:
+        type: string
+      update:
+        type: string
+      updatedAt:
+        type: string
+      version:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Tài liệu API
+  title: Course API
+  version: "1.0"
+paths:
+  /courses:
+    get:
+      consumes:
+      - application/json
+      description: Lấy danh sách tất cả khóa học
+      parameters:
+      - description: Tên khóa học
+        in: query
+        name: name
+        type: string
+      - description: Ngày bắt đầu khóa học
+        format: date
+        in: query
+        name: startDate
+        type: string
+      - description: Ngày kết thúc khóa học
+        format: date
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/coursemodel.Course'
+            type: array
+        "500":
+          description: Lỗi khi lấy danh sách khóa học
+          schema:
+            type: string
+      summary: Lấy tất cả khóa học
+      tags:
+      - courses
+    post:
+      consumes:
+      - multipart/form-data
+      description: Tạo khóa học mới với thông tin từ form data
+      parameters:
+      - description: Tiêu đề
+        in: formData
+        name: title
+        type: string
+      - description: Phiên bản
+        in: formData
+        name: version
+        type: string
+      - default: Phổ biến
+        description: Loại
+        enum:
+        - Phổ biến
+        - Miễn Phí
+        - Mới cập nhật
+        in: formData
+        name: titleCate
+        type: string
+      - description: Danh mục
+        in: formData
+        name: category
+        type: string
+      - description: Nhà phát triển
+        in: formData
+        name: developer
+        type: string
+      - description: Mô tả
+        in: formData
+        name: desc
+        type: string
+      - description: ID phát hành
+        in: formData
+        name: playId
+        type: string
+      - description: Ảnh đại diện
+        in: formData
+        name: img
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/coursemodel.Course'
+        "400":
+          description: Lỗi khi phân tích dữ liệu
+          schema:
+            type: string
+        "500":
+          description: Lỗi khi thêm khóa học
+          schema:
+            type: string
+      summary: Tạo khóa học mới
+      tags:
+      - courses
+  /courses/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Xóa khóa học theo ID
+      parameters:
+      - description: ID khóa học
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+      summary: Xóa khóa học
+      tags:
+      - courses
+    get:
+      consumes:
+      - application/json
+      description: Lấy thông tin khóa học
+      parameters:
+      - description: ID khóa học
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/coursemodel.Course'
+        "500":
+          description: Lỗi khi lấy thông tin khóa học
+          schema:
+            type: string
+      summary: Lấy thông tin khóa học
+      tags:
+      - courses
+    put:
+      consumes:
+      - multipart/form-data
+      description: Cập nhật thông tin khóa học
+      parameters:
+      - description: ID khóa học
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Tiêu đề
+        in: formData
+        name: title
+        type: string
+      - description: Phiên bản
+        in: formData
+        name: version
+        type: string
+      - default: Phổ biến
+        description: Loại
+        enum:
+        - Phổ biến
+        - Miễn Phí
+        - Mới cập nhật
+        in: formData
+        name: titleCate
+        type: string
+      - description: Danh mục
+        in: formData
+        name: category
+        type: string
+      - description: Nhà phát triển
+        in: formData
+        name: developer
+        type: string
+      - description: Mô tả
+        in: formData
+        name: desc
+        type: string
+      - description: ID phát hành
+        in: formData
+        name: playId
+        type: string
+      - description: Ảnh đại diện
+        in: formData
+        name: img
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/coursemodel.Course'
+        "400":
+          description: Lỗi khi phân tích dữ liệu
+          schema:
+            type: string
+        "500":
+          description: Lỗi khi thêm khóa học
+          schema:
+            type: string
+      summary: Cập nhật khóa học
+      tags:
+      - courses
+swagger: "2.0"

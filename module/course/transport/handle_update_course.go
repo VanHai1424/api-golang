@@ -12,6 +12,24 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// @Summary Cập nhật khóa học
+// @Description Cập nhật thông tin khóa học
+// @Tags courses
+// @Accept multipart/form-data
+// @Produce json
+// @Param id path int true "ID khóa học"
+// @Param title formData string false "Tiêu đề"
+// @Param version formData string false "Phiên bản"
+// @Param titleCate formData string false "Loại" Enums(Phổ biến, Miễn Phí, Mới cập nhật) default(Phổ biến)
+// @Param category formData string false "Danh mục"
+// @Param developer formData string false "Nhà phát triển"
+// @Param desc formData string false "Mô tả"
+// @Param playId formData string false "ID phát hành"
+// @Param img formData file false "Ảnh đại diện"
+// @Success 201 {object} coursemodel.Course
+// @Failure 400 {string} string "Lỗi khi phân tích dữ liệu"
+// @Failure 500 {string} string "Lỗi khi thêm khóa học"
+// @Router /courses/{id} [put]
 func HandleUpdateCourse(db *sql.DB) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
