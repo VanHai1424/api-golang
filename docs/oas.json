@@ -1,0 +1,429 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Course API",
+    "description": "Tài liệu API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api"
+    }
+  ],
+  "paths": {
+    "/courses": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Course"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi khi lấy danh sách khóa học",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "courses"
+        ],
+        "description": " Lấy danh sách tất cả khóa học",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Tên khóa học",
+            "schema": {
+              "type": "string",
+              "description": "Tên khóa học"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Ngày bắt đầu khóa học",
+            "schema": {
+              "type": "string",
+              "description": "Ngày bắt đầu khóa học"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "Ngày kết thúc khóa học",
+            "schema": {
+              "type": "string",
+              "description": "Ngày kết thúc khóa học"
+            }
+          }
+        ]
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Course"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi khi phân tích dữ liệu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi khi thêm khóa học",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "courses"
+        ],
+        "description": " Tạo khóa học mới với thông tin từ form data",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Tiêu đề"
+                  },
+                  "version": {
+                    "type": "string",
+                    "description": "Phiên bản"
+                  },
+                  "titleCate": {
+                    "type": "string",
+                    "description": "Loại khóa học"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "Danh mục"
+                  },
+                  "developer": {
+                    "type": "string",
+                    "description": "Nhà phát triển"
+                  },
+                  "desc": {
+                    "type": "string",
+                    "description": "Mô tả"
+                  },
+                  "playId": {
+                    "type": "string",
+                    "description": "ID phát hành"
+                  },
+                  "img": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Ảnh đại diện"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Course"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi khi lấy thông tin khóa học",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "courses"
+        ],
+        "description": " Lấy thông tin khóa học",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID khóa học",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "ID khóa học"
+            }
+          }
+        ]
+      },
+      "put": {
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Course"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Lỗi khi phân tích dữ liệu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi khi thêm khóa học",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "courses"
+        ],
+        "description": " Cập nhật thông tin khóa học",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID khóa học",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "ID khóa học"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Tiêu đề"
+                  },
+                  "version": {
+                    "type": "string",
+                    "description": "Phiên bản"
+                  },
+                  "titleCate": {
+                    "type": "string",
+                    "description": "Loại"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "Danh mục"
+                  },
+                  "developer": {
+                    "type": "string",
+                    "description": "Nhà phát triển"
+                  },
+                  "desc": {
+                    "type": "string",
+                    "description": "Mô tả"
+                  },
+                  "playId": {
+                    "type": "string",
+                    "description": "ID phát hành"
+                  },
+                  "img": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Ảnh đại diện"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "courses"
+        ],
+        "description": " Xóa khóa học theo ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID khóa học",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "ID khóa học"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Course": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "img": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "update": {
+            "type": "string"
+          },
+          "developer": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "playId": {
+            "type": "string"
+          },
+          "downloads": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "titleCate": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "coursemodel.Course": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "img": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "update": {
+            "type": "string"
+          },
+          "developer": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "playId": {
+            "type": "string"
+          },
+          "downloads": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "titleCate": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

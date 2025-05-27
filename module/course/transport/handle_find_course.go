@@ -10,7 +10,7 @@ import (
 
 // @Summary Lấy thông tin khóa học
 // @Description Lấy thông tin khóa học
-// @Tags courses
+// @tag courses
 // @Accept json
 // @Produce json
 // @Param id path int true "ID khóa học"

@@ -1,8 +1,7 @@
 // @title Course API
 // @version 1.0
 // @description Tài liệu API
-// @host localhost:8080
-// @BasePath /api
+// @Server http://localhost:8080/api
 package main
 
 import (
@@ -13,9 +12,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/swagger"
-
-	_ "crawdata/docs"
 )
 
 func main() {
@@ -42,6 +38,9 @@ func main() {
 	// Cấu hình thư mục public thành static folder, truy cập bằng đường dẫn /public/...
 	app.Static("/public", "./public")
 
+	app.Static("/docs", "./docs")
+	app.Static("/docs/oas.json", "./docs/oas.json")
+
 	courseGroup := app.Group("/api/courses")
 
 	courseGroup.Get("/", coursetrpt.HandleListCourse(sqlConfig.Db))
@@ -49,8 +48,6 @@ func main() {
 	courseGroup.Post("/", coursetrpt.HandleCreateCourse(sqlConfig.Db))
 	courseGroup.Put("/:id", coursetrpt.HandleUpdateCourse(sqlConfig.Db))
 	courseGroup.Delete("/:id", coursetrpt.HandleDeleteCourse(sqlConfig.Db))
-
-	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	fmt.Println("Server đang chạy tại http://localhost:8080")
 	log.Fatal(app.Listen(":8080"))

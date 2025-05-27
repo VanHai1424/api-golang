@@ -14,18 +14,18 @@ import (
 
 // @Summary Cập nhật khóa học
 // @Description Cập nhật thông tin khóa học
-// @Tags courses
+// @tag courses
 // @Accept multipart/form-data
 // @Produce json
 // @Param id path int true "ID khóa học"
-// @Param title formData string false "Tiêu đề"
-// @Param version formData string false "Phiên bản"
-// @Param titleCate formData string false "Loại" Enums(Phổ biến, Miễn Phí, Mới cập nhật) default(Phổ biến)
-// @Param category formData string false "Danh mục"
-// @Param developer formData string false "Nhà phát triển"
-// @Param desc formData string false "Mô tả"
-// @Param playId formData string false "ID phát hành"
-// @Param img formData file false "Ảnh đại diện"
+// @Param title form string false "Tiêu đề"
+// @Param version form string false "Phiên bản"
+// @Param titleCate form string false "Loại" Enums(Phổ biến, Miễn Phí, Mới cập nhật) default(Phổ biến)
+// @Param category form string false "Danh mục"
+// @Param developer form string false "Nhà phát triển"
+// @Param desc form string false "Mô tả"
+// @Param playId form string false "ID phát hành"
+// @Param img file ignored false "Ảnh đại diện"
 // @Success 201 {object} coursemodel.Course
 // @Failure 400 {string} string "Lỗi khi phân tích dữ liệu"
 // @Failure 500 {string} string "Lỗi khi thêm khóa học"

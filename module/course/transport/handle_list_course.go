@@ -10,7 +10,7 @@ import (
 
 // @Summary Lấy tất cả khóa học
 // @Description Lấy danh sách tất cả khóa học
-// @Tags courses
+// @tag courses
 // @Accept json
 // @Produce json
 // @Param name query string false "Tên khóa học"
