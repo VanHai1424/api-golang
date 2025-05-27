@@ -12,11 +12,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type Course struct {
-	// Loại khóa học
-	TitleCate string `enum:"Phổ biến,Miễn phí,Mới cập nhật" example:"Phổ biến"`
-}
-
 // @Summary Tạo khóa học mới
 // @Description Tạo khóa học mới với thông tin từ form data
 // @tag courses
