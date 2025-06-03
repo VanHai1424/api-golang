@@ -4,12 +4,12 @@ import (
 	coursebiz "crawdata/module/course/business"
 	coursemodel "crawdata/module/course/model"
 	coursestorage "crawdata/module/course/storage"
-	"database/sql"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 // @Summary Cập nhật khóa học
@@ -30,7 +30,7 @@ import (
 // @Failure 400 {string} string "Lỗi khi phân tích dữ liệu"
 // @Failure 500 {string} string "Lỗi khi thêm khóa học"
 // @Router /courses/{id} [put]
-func HandleUpdateCourse(db *sql.DB) fiber.Handler {
+func HandleUpdateCourse(db *gorm.DB) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
 		if id == "" {
@@ -52,7 +52,7 @@ func HandleUpdateCourse(db *sql.DB) fiber.Handler {
 			course.Downloads = "1.000.000+"
 		}
 
-		if course.TitleCate == "" {
+		if course.TitleCate == "" && course.Type != "" {
 			course.TitleCate = course.Type
 		}
 

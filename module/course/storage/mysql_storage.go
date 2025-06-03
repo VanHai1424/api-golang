@@ -1,24 +1,13 @@
 package coursestorage
 
 import (
-	"database/sql"
-	"time"
+	"gorm.io/gorm"
 )
 
 type MySQLStorage struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-var vnLoc *time.Location
-
-func init() {
-	var err error
-	vnLoc, err = time.LoadLocation("Asia/Ho_Chi_Minh")
-	if err != nil {
-		panic(err)
-	}
-}
-
-func NewMySQLStorage(db *sql.DB) *MySQLStorage {
+func NewMySQLStorage(db *gorm.DB) *MySQLStorage {
 	return &MySQLStorage{db: db}
 }

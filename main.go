@@ -1,12 +1,10 @@
-// @title Course API
-// @version 1.0
-// @description Tài liệu API
-// @Server http://localhost:8080/api
 package main
 
 import (
 	coursetrpt "crawdata/module/course/transport"
 	"crawdata/pkg/db"
+	"crawdata/pkg/migration"
+	"flag"
 	"fmt"
 	"log"
 
@@ -15,6 +13,10 @@ import (
 )
 
 func main() {
+	// Định nghĩa flag migration
+	migrationFlag := flag.Bool("migration", false, "Chạy migration và insert data mẫu")
+	flag.Parse()
+
 	sqlConfig := db.Sql{
 		Host:     "localhost",
 		User:     "root",
@@ -23,19 +25,36 @@ func main() {
 		Database: "test",
 	}
 
-	// Khởi tạo kết nối cơ sở dữ liệu
+	// Khởi tạo kết nối DB
 	err := sqlConfig.InitDB()
 	if err != nil {
-		log.Fatal("Kết nối không thành công: ", err)
+		log.Fatal("Kết nối DB không thành công: ", err)
 	}
 
+	if *migrationFlag {
+		fmt.Println("Chạy migration và insert data mẫu...")
+
+		// Chạy migrate
+		err = migration.Migrate(sqlConfig.Db)
+		if err != nil {
+			log.Fatal("Migration lỗi: ", err)
+		}
+
+		err = migration.InsertSampleData(sqlConfig.Db)
+		if err != nil {
+			log.Fatal("Insert data mẫu lỗi: ", err)
+		}
+
+		fmt.Println("Hoàn thành migration và insert data mẫu.")
+	}
+
+	// Nếu không có flag migration thì chạy server bình thường
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
-	// Cấu hình thư mục public thành static folder, truy cập bằng đường dẫn /public/...
 	app.Static("/public", "./public")
 
 	app.Static("/docs", "./docs")

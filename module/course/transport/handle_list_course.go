@@ -3,9 +3,9 @@ package coursetrpt
 import (
 	coursebiz "crawdata/module/course/business"
 	coursestorage "crawdata/module/course/storage"
-	"database/sql"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 // @Summary Lấy tất cả khóa học
@@ -19,7 +19,7 @@ import (
 // @Success 200 {array} coursemodel.Course
 // @Failure 500 {string} string "Lỗi khi lấy danh sách khóa học"
 // @Router /courses [get]
-func HandleListCourse(db *sql.DB) fiber.Handler {
+func HandleListCourse(db *gorm.DB) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		name := ctx.Query("name")
 		startDate := ctx.Query("startDate")
