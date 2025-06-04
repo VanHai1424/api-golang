@@ -2,8 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Course API",
-    "description": "Tài liệu API",
-    "version": "1.0"
+    "description": "API Course.",
+    "version": "1.0.0"
   },
   "servers": [
     {
@@ -363,14 +363,16 @@
           "titleCate": {
             "type": "string"
           },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          },
           "type": {
             "type": "string"
+          },
+          "CreatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "UpdatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -413,14 +415,16 @@
           "titleCate": {
             "type": "string"
           },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          },
           "type": {
             "type": "string"
+          },
+          "CreatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "UpdatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

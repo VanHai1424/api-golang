@@ -1,3 +1,8 @@
+// @Version 1.0.0
+// @Title Course API
+// @Description API Course.
+// @Server http://localhost:8080/api
+
 package main
 
 import (
@@ -8,6 +13,8 @@ import (
 	"fmt"
 	"log"
 
+	"crawdata/pkg/config"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
@@ -17,24 +24,30 @@ func main() {
 	migrationFlag := flag.Bool("migration", false, "Chạy migration và insert data mẫu")
 	flag.Parse()
 
-	sqlConfig := db.Sql{
-		Host:     "localhost",
-		User:     "root",
-		Password: "",
-		Port:     "3306",
-		Database: "test",
+	// Load cấu hình
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("Load config lỗi: ", err)
 	}
 
-	// Khởi tạo kết nối DB
-	err := sqlConfig.InitDB()
+	// Khởi tạo kết nối DB dựa trên config
+	sqlConfig := db.Sql{
+		Host:     cfg.DB.Host,
+		User:     cfg.DB.User,
+		Password: cfg.DB.Pass,
+		Port:     cfg.DB.Port,
+		Database: cfg.DB.Name,
+	}
+
+	err = sqlConfig.InitDB()
 	if err != nil {
 		log.Fatal("Kết nối DB không thành công: ", err)
 	}
 
+	// Nếu có flag migration thì chạy migration + insert data mẫu
 	if *migrationFlag {
 		fmt.Println("Chạy migration và insert data mẫu...")
 
-		// Chạy migrate
 		err = migration.Migrate(sqlConfig.Db)
 		if err != nil {
 			log.Fatal("Migration lỗi: ", err)
@@ -48,7 +61,7 @@ func main() {
 		fmt.Println("Hoàn thành migration và insert data mẫu.")
 	}
 
-	// Nếu không có flag migration thì chạy server bình thường
+	// Khởi tạo Fiber app và middleware
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
@@ -56,12 +69,11 @@ func main() {
 	}))
 
 	app.Static("/public", "./public")
-
 	app.Static("/docs", "./docs")
 	app.Static("/docs/oas.json", "./docs/oas.json")
 
+	// Định nghĩa route
 	courseGroup := app.Group("/api/courses")
-
 	courseGroup.Get("/", coursetrpt.HandleListCourse(sqlConfig.Db))
 	courseGroup.Get("/:id", coursetrpt.HandleFindCourse(sqlConfig.Db))
 	courseGroup.Post("/", coursetrpt.HandleCreateCourse(sqlConfig.Db))
