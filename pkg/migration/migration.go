@@ -2,13 +2,14 @@ package migration
 
 import (
 	coursemodel "crawdata/module/course/model"
+	usermodel "crawdata/module/user/model"
 	"log"
 
 	"gorm.io/gorm"
 )
 
 func Migrate(db *gorm.DB) error {
-	err := db.AutoMigrate(&coursemodel.Course{})
+	err := db.AutoMigrate(&coursemodel.Course{}, &usermodel.User{})
 	if err != nil {
 		return err
 	}

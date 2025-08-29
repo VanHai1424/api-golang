@@ -12,14 +12,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// @Summary Tạo khóa học mới
+// @Title Tạo khóa học mới
 // @Description Tạo khóa học mới với thông tin từ form data
 // @tag courses
 // @Accept multipart/form-data
 // @Produce json
 // @Param title form string false "Tiêu đề"
 // @Param version form string false "Phiên bản"
-// @Param titleCate form string false "Loại khóa học" enums(Phổ biến,Miễn phí,Mới cập nhật)
+// @Param titleCate form string false "Loại khóa học"
 // @Param category form string false "Danh mục"
 // @Param developer form string false "Nhà phát triển"
 // @Param desc form string false "Mô tả"

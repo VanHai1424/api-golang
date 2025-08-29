@@ -28,6 +28,7 @@ func LoadConfig() (*Config, error) {
 	viper.SetConfigName(fmt.Sprintf("%s-config", mode))
 	viper.SetConfigType("json")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("../../")
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("error reading config: %w", err)

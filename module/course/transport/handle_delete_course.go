@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// @Summary Xóa khóa học
+// @Title Xóa khóa học
 // @Description Xóa khóa học theo ID
 // @tag courses
 // @Accept json

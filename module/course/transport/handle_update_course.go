@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// @Summary Cập nhật khóa học
+// @Title Cập nhật khóa học
 // @Description Cập nhật thông tin khóa học
 // @tag courses
 // @Accept multipart/form-data

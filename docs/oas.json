@@ -38,6 +38,7 @@
         "tags": [
           "courses"
         ],
+        "summary": "Lấy tất cả khóa học",
         "description": " Lấy danh sách tất cả khóa học",
         "parameters": [
           {
@@ -105,6 +106,7 @@
         "tags": [
           "courses"
         ],
+        "summary": "Tạo khóa học mới",
         "description": " Tạo khóa học mới với thông tin từ form data",
         "requestBody": {
           "content": {
@@ -179,6 +181,7 @@
         "tags": [
           "courses"
         ],
+        "summary": "Lấy thông tin khóa học",
         "description": " Lấy thông tin khóa học",
         "parameters": [
           {
@@ -230,6 +233,7 @@
         "tags": [
           "courses"
         ],
+        "summary": "Cập nhật khóa học",
         "description": " Cập nhật thông tin khóa học",
         "parameters": [
           {
@@ -305,6 +309,7 @@
         "tags": [
           "courses"
         ],
+        "summary": "Xóa khóa học",
         "description": " Xóa khóa học theo ID",
         "parameters": [
           {
