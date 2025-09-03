@@ -221,11 +221,6 @@ func processAnswers(tx *gorm.DB, qMap map[string]interface{}, questionID, qIndex
 		return fmt.Errorf("question %d không có answers", qIndex)
 	}
 
-	if correctIdx >= len(answers) {
-		return fmt.Errorf("correctAnswerIndex (%d) vượt quá số lượng answers (%d) trong question %d",
-			correctIdx, len(answers), qIndex)
-	}
-
 	for ansIndex, ans := range answers {
 		answerText, ok := ans.(string)
 		if !ok {
@@ -329,7 +324,6 @@ func FetchAllQuizzes(categories []string) ([]string, error) {
 	categoryCh := make(chan string)
 	wg := sync.WaitGroup{}
 
-	// 2 workers cho categories
 	for w := 0; w < 2; w++ {
 		wg.Add(1)
 		go func(workerID int) {
@@ -347,8 +341,7 @@ func FetchAllQuizzes(categories []string) ([]string, error) {
 				allQuizzes = append(allQuizzes, quizzes...)
 				mu.Unlock()
 
-				log.Printf("✅ Worker-%d lấy được %d quizzes. Tổng hiện tại: %d",
-					workerID, len(quizzes), len(allQuizzes))
+				log.Printf("✅ Worker-%d lấy được %d quizzes. Tổng hiện tại: %d", workerID, len(quizzes), len(allQuizzes))
 
 				// Delay tránh bị rate limit
 				time.Sleep(2 * time.Second)
@@ -368,7 +361,7 @@ func FetchAllQuizzes(categories []string) ([]string, error) {
 	return allQuizzes, nil
 }
 
-// Crawl quizzes song song (2 workers)
+// Crawl quizzes
 func CrawlAllQuizzes(quizLinks []string) int {
 	total := len(quizLinks)
 	successCount := 0
@@ -397,8 +390,7 @@ func CrawlAllQuizzes(quizLinks []string) int {
 				log.Printf("✅ [Worker-%d] Đã crawl thành công quiz (%d/%d)", workerID, done, total)
 
 				if done%10 == 0 {
-					log.Printf("📊 Tiến độ: %d/%d quizzes (%.1f%%)",
-						done, total, float64(done)/float64(total)*100)
+					log.Printf("📊 Tiến độ: %d/%d quizzes (%.1f%%)", done, total, float64(done)/float64(total)*100)
 					runtime.GC()
 				}
 
@@ -421,7 +413,6 @@ func CrawlAllQuizzes(quizLinks []string) int {
 }
 
 func main() {
-	// Config & DB
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal("Load config error: ", err)
@@ -446,25 +437,24 @@ func main() {
 	app.Get("/api/crawl", func(c *fiber.Ctx) error {
 		log.Println("🚀 Bắt đầu quá trình crawl...")
 
-		// 1. Lấy categories
+		// Lấy categories
 		categories, err := GetCategories("https://www.britannica.com/quiz/browse")
 		if err != nil {
 			log.Fatalf("❌ FATAL: Không thể lấy categories: %v", err)
 		}
 		log.Printf("✅ Lấy được %d categories", len(categories))
 
-		// 2. Lấy quiz links
+		// Lấy quiz links
 		allQuizzes, err := FetchAllQuizzes(categories)
 		if err != nil {
 			log.Fatalf("❌ FATAL: Lỗi khi lấy quizzes: %v", err)
 		}
 		log.Printf("📊 Tổng cộng có %d quizzes cần crawl", len(allQuizzes))
 
-		// 3. Crawl quizzes
+		// Crawl quizzes
 		successCount := CrawlAllQuizzes(allQuizzes)
 
-		log.Printf("🎉 HOÀN THÀNH! Đã crawl thành công %d/%d quizzes",
-			successCount, len(allQuizzes))
+		log.Printf("🎉 HOÀN THÀNH! Đã crawl thành công %d/%d quizzes", successCount, len(allQuizzes))
 
 		return c.JSON(fiber.Map{
 			"success": true,
