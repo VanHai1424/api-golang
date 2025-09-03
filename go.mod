@@ -8,6 +8,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.2
 	github.com/gofiber/fiber/v2 v2.52.8
 	github.com/spf13/viper v1.20.1
+	github.com/yosuke-furukawa/json5 v0.1.1
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.30.0
 )
