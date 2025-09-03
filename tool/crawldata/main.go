@@ -1,22 +1,22 @@
 package main
 
 import (
-	"context"
 	"crawdata/pkg/config"
 	"crawdata/pkg/db"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/chromedp/chromedp"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/yosuke-furukawa/json5/encoding/json5"
 	"gorm.io/gorm"
 )
 
@@ -32,6 +32,7 @@ type (
 		Name          string `json:"name"`
 		Desc          string `json:"desc"`
 		Thumbnail     string `json:"thumbnail"`
+		Url           string `json:"url"`
 		TotalQuestion int    `json:"total_question"`
 		CategoryId    int    `json:"category_id"`
 	}
@@ -74,27 +75,47 @@ func getSlice(m map[string]interface{}, key string) []interface{} {
 	return nil
 }
 
+func stripHTML(input string) string {
+	re := regexp.MustCompile(`<.*?>`)
+	return re.ReplaceAllString(input, "")
+}
+
 // ==== Crawl Quiz ====
 func CrawlQuiz(url string) error {
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
+	resp, err := http.Get(url)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadGateway, fmt.Sprintf("lỗi GET %s: %v", url, err))
+	}
+	defer resp.Body.Close()
 
-	var raw string
-	if err := chromedp.Run(ctx,
-		chromedp.Navigate(url),
-		chromedp.Sleep(5*time.Second),
-		chromedp.Evaluate(`JSON.stringify(window.Mendel)`, &raw),
-	); err != nil {
-		return fmt.Errorf("lỗi chromedp khi truy cập %s: %w", url, err)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("lỗi parse HTML từ %s: %v", url, err))
 	}
 
-	if raw == "" || raw == "undefined" {
-		return fmt.Errorf("không tìm thấy dữ liệu window.Mendel trên trang %s", url)
+	var mendelRaw string
+	doc.Find("script").EachWithBreak(func(i int, s *goquery.Selection) bool {
+		if strings.Contains(s.Text(), "window.Mendel") {
+			mendelRaw = s.Text()
+			return false
+		}
+		return true
+	})
+	if mendelRaw == "" {
+		return fiber.NewError(fiber.StatusNotFound, "không tìm thấy window.Mendel")
 	}
+
+	re := regexp.MustCompile(`(?s)window\.Mendel\s*=\s*({.*});`)
+	match := re.FindStringSubmatch(mendelRaw)
+	if len(match) < 2 {
+		return fiber.NewError(fiber.StatusInternalServerError, "không extract được window.Mendel")
+	}
+
+	cleanJSON := match[1]
 
 	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(raw), &data); err != nil {
-		return fmt.Errorf("lỗi parse JSON từ %s: %w", url, err)
+	if err := json5.Unmarshal([]byte(cleanJSON), &data); err != nil {
+		log.Fatal(err)
 	}
 
 	config := getMap(data, "config")
@@ -164,6 +185,7 @@ func processCategoryAndQuiz(tx *gorm.DB, quizCfg, config map[string]interface{},
 		Name:          quizTitle,
 		Desc:          getString(config, "quizDescription"),
 		Thumbnail:     getString(getMap(quizCfg, "image"), "fullUrl"),
+		Url:           url,
 		TotalQuestion: len(questions),
 		CategoryId:    category.ID,
 	}
@@ -227,6 +249,9 @@ func processAnswers(tx *gorm.DB, qMap map[string]interface{}, questionID, qIndex
 			return fmt.Errorf("answer %d trong question %d không phải string", ansIndex+1, qIndex)
 		}
 
+		// 🚀 bỏ thẻ HTML trước khi lưu
+		answerText = stripHTML(answerText)
+
 		answer := Answer{
 			Content:    answerText,
 			IsCorrect:  ansIndex == correctIdx,
@@ -243,64 +268,71 @@ func processAnswers(tx *gorm.DB, qMap map[string]interface{}, questionID, qIndex
 func GetCategories(url string) ([]string, error) {
 	log.Printf("🔍 Đang lấy danh sách categories từ: %s", url)
 
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
+	// Gửi HTTP request thẳng
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("lỗi khi GET %s: %w", url, err)
+	}
+	defer resp.Body.Close()
 
-	var html string
-	if err := chromedp.Run(ctx,
-		chromedp.Navigate(url),
-		chromedp.Sleep(3*time.Second),
-		chromedp.OuterHTML(`.quiz-category-select`, &html, chromedp.ByQuery),
-	); err != nil {
-		return nil, fmt.Errorf("lỗi chromedp khi lấy categories: %w", err)
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("server trả về status %d", resp.StatusCode)
 	}
 
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	// Parse HTML
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("lỗi parse HTML categories: %w", err)
 	}
 
 	var links []string
-	doc.Find("option").Each(func(_ int, s *goquery.Selection) {
+	seen := make(map[string]bool) // tránh trùng
+
+	doc.Find(".quiz-category-select option").Each(func(_ int, s *goquery.Selection) {
 		val, _ := s.Attr("value")
 		if val != "-1" && strings.TrimSpace(val) != "" {
-			links = append(links, "https://www.britannica.com"+val)
+			fullURL := "https://www.britannica.com" + val
+			if !seen[fullURL] {
+				seen[fullURL] = true
+				links = append(links, fullURL)
+			}
 		}
 	})
 
 	if len(links) == 0 {
 		return nil, fmt.Errorf("không tìm thấy category links nào")
 	}
-
 	return links, nil
 }
 
 func GetQuizzesByCategory(url string) ([]string, error) {
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
+	log.Printf("🔍 Đang lấy quizzes từ category: %s", url)
 
-	var htmlContent string
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(url),
-		chromedp.Sleep(4*time.Second),
-		chromedp.OuterHTML(`#all-quizzes`, &htmlContent, chromedp.ByQuery),
-	)
+	// Gửi request thẳng
+	resp, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("lỗi chromedp khi truy cập category: %w", err)
+		return nil, fmt.Errorf("lỗi khi GET %s: %w", url, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("server trả về status %d", resp.StatusCode)
 	}
 
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	// Parse HTML
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("lỗi parse HTML: %w", err)
 	}
 
 	var quizLinks []string
-	seen := make(map[string]bool) // Để tránh duplicate
+	seen := make(map[string]bool)
 
-	doc.Find("a").Each(func(i int, s *goquery.Selection) {
+	// Tìm tất cả link trong #all-quizzes
+	doc.Find("#all-quizzes a").Each(func(i int, s *goquery.Selection) {
 		href, exists := s.Attr("href")
 		if exists && strings.HasPrefix(href, "/quiz/") {
-			fullURL := fmt.Sprintf("https://www.britannica.com%s", href)
+			fullURL := "https://www.britannica.com" + href
 			if !seen[fullURL] {
 				seen[fullURL] = true
 				quizLinks = append(quizLinks, fullURL)
@@ -324,7 +356,7 @@ func FetchAllQuizzes(categories []string) ([]string, error) {
 	categoryCh := make(chan string)
 	wg := sync.WaitGroup{}
 
-	for w := 0; w < 2; w++ {
+	for w := 0; w < 3; w++ {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
@@ -370,7 +402,7 @@ func CrawlAllQuizzes(quizLinks []string) int {
 	quizCh := make(chan string)
 	wg := sync.WaitGroup{}
 
-	for w := 0; w < 2; w++ {
+	for w := 0; w < 10; w++ {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
